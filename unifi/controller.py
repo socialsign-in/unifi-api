@@ -1,12 +1,7 @@
 
-try:
-    # Ugly hack to force SSLv3 and avoid
-    # urllib2.URLError: <urlopen error [Errno 1] _ssl.c:504:
-    # error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error>
-    import _ssl
-    _ssl.PROTOCOL_SSLv23 = _ssl.PROTOCOL_SSLv3
-except:
-    pass
+import urllib
+import ssl
+from urllib2_tls import TLS1Handler
 
 
 import cookielib
@@ -69,8 +64,8 @@ class Controller:
         log.debug('Controller for %s', self.url)
 
         cj = cookielib.CookieJar()
-
-        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+ 
+        self.opener = urllib2.build_opener(TLS1Handler(),urllib2.HTTPCookieProcessor(cj))
 
         self._login(version)
 
@@ -114,6 +109,7 @@ class Controller:
     def _login(self, version):
         log.debug('login() as %s', self.username)
         
+
         if(version == 'v4'):
             params = "{'username':'" + self.username + "','password':'" + self.password + "'}"
             self.opener.open(self.url + 'api/login', params).read()

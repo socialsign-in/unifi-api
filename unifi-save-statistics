@@ -14,7 +14,7 @@ parser.add_argument('-s', '--siteid', default='default', help='the site ID, UniF
 parser.add_argument('-f', '--file', default='statistics-unifi.csv', help='the filename of write statistics')
 args = parser.parse_args()
 
-c = Controller(args.controller, args.username, args.password, args.version, args.siteid)
+c = Controller(args.controller, args.username, args.password, version=args.version, site_id=args.siteid)
 
 statistics = c.get_statistics_last_24h()
 

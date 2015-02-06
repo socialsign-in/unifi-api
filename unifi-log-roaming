@@ -15,7 +15,7 @@ parser.add_argument('-v', '--version', default='v2', help='the controller base v
 parser.add_argument('-s', '--siteid', default='default', help='the site ID, UniFi >=3.x only (default "default")')
 args = parser.parse_args()
 
-c = Controller(args.controller, args.username, args.password, args.version, args.siteid)
+c = Controller(args.controller, args.username, args.password, version=args.version, site_id=args.siteid)
 
 aps = c.get_aps()
 ap_names = dict([(ap['mac'], ap['name']) for ap in aps])
