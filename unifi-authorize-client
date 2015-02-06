@@ -10,6 +10,8 @@ parser.add_argument('-u', '--username', default='admin', help='the controller us
 parser.add_argument('-p', '--password', default='', help='the controller password')
 parser.add_argument('-v', '--version', default='v2', help='the controller base version (default "v2")')
 parser.add_argument('-s', '--siteid', default='default', help='the site ID, UniFi >=3.x only (default "default")')
+parser.add_argument('-m', '--client_mac', default=None, help='the client\'s mac address')
+parser.add_argument('-t', '--minutes', default=60, help='the client\'s mac address')
 args = parser.parse_args()
 
 from unifi.default_config import load_config 
@@ -21,23 +23,9 @@ if not args.password:
     args.version = 'v' + str(settings['version'])
     args.siteid = settings['site_id']
 
+if not args.client_mac:
+    raise Exception("must pass mac address")
+
 c = Controller(args.controller, args.username, args.password, version=args.version, site_id=args.siteid)
-
-aps = c.get_aps()
-ap_names = dict([(ap['mac'], ap['name']) for ap in aps])
-clients = c.get_clients()
-clients.sort(key=lambda x: -x['rssi'])
-
-FORMAT = '%-16s  %18s  %-12s  %4s  %4s  %4s  %3s  %3s'
-print(FORMAT % ('NAME', 'MAC', 'AP','AUTH', 'CHAN', 'RSSI', 'RX', 'TX'))
-for client in clients:
-    ap_name = ap_names[client['ap_mac']]
-    name = client.get('hostname') or client.get('ip', 'Unknown')
-    rssi = client['rssi']
-    mac = client['mac']
-    authorized = 'Y' if client['authorized'] else 'N'
-    rx = int(client['rx_rate'] / 1000)
-    tx = int(client['tx_rate'] / 1000)
-    channel = client['channel']
-
-    print(FORMAT % (name, mac, ap_name, authorized, channel, rssi, rx, tx))
+print("attempting to auth %s" % args.client_mac) 
+c.authorize_guest(args.client_mac,args.minutes)

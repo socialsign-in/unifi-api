@@ -20,6 +20,15 @@ parser.add_argument('-o', '--holdintv', default=300, type=int, help='(s) holddow
 parser.add_argument('-d', '--debug', help='enable debug output', action='store_true')
 args = parser.parse_args()
 
+from unifi.default_config import load_config 
+if not args.password:
+    settings = load_config() 
+    args.controller = settings['controller_url'].split("//")[1].split(":")[0]
+    args.username = settings['controller_credentials']['username']
+    args.password = settings['controller_credentials']['password']
+    args.version = 'v' + str(settings['version'])
+    args.siteid = settings['site_id']
+
 c = Controller(args.controller, args.username, args.password, version=args.version, site_id=args.siteid)
 
 all_aps = c.get_aps()

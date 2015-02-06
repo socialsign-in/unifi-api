@@ -14,6 +14,15 @@ parser.add_argument('-s', '--siteid', default='default', help='the site ID, UniF
 parser.add_argument('-f', '--file', default='statistics-unifi.csv', help='the filename of write statistics')
 args = parser.parse_args()
 
+from unifi.default_config import load_config 
+if not args.password:
+    settings = load_config() 
+    args.controller = settings['controller_url'].split("//")[1].split(":")[0]
+    args.username = settings['controller_credentials']['username']
+    args.password = settings['controller_credentials']['password']
+    args.version = 'v' + str(settings['version'])
+    args.siteid = settings['site_id']
+
 c = Controller(args.controller, args.username, args.password, version=args.version, site_id=args.siteid)
 
 statistics = c.get_statistics_last_24h()
@@ -24,8 +33,9 @@ fo = open(args.file, "wb")
 FORMAT_CSV = '%15s;%10s;%25s;%10s\n'
 fo.write(FORMAT_CSV % ('Bytes', 'num_sta', 'time', 'time int'));
 for stat in statistics:
+    #print stat
     bytes = stat['bytes']
-    num_sta = stat['num_sta']
+    num_sta = stat.get('num_sta','N/A')
     timeint = stat['time']/1000
     timestap = time.ctime(int(stat['time'])/1000)
     fo.write(FORMAT_CSV % (bytes, num_sta, timestap, timeint));

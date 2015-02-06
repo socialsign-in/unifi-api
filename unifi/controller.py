@@ -7,7 +7,7 @@ from urllib2_tls import TLS1Handler
 import cookielib
 import json
 import logging
-from time import time
+import time
 import urllib
 import urllib2
 
@@ -64,7 +64,7 @@ class Controller:
         log.debug('Controller for %s', self.url)
 
         cj = cookielib.CookieJar()
- 
+        
         self.opener = urllib2.build_opener(TLS1Handler(),urllib2.HTTPCookieProcessor(cj))
 
         self._login(version)
@@ -146,7 +146,10 @@ class Controller:
         js = json.dumps(
             {'attrs': ["bytes", "num_sta", "time"], 'start': int(endtime - 86400) * 1000, 'end': int(endtime - 3600) * 1000})
         params = urllib.urlencode({'json': js})
-        return self._read(self.api_url + 'stat/report/hourly.system', params)
+        if self.version == 'v4':
+            return self._read(self.api_url + 'stat/report/hourly.site', params)
+        else: 
+            return self._read(self.api_url + 'stat/report/hourly.system', params)
 
     def get_events(self):
         """Return a list of all Events."""
@@ -317,6 +320,6 @@ class Controller:
             guest_mac -- the guest MAC address : aa:bb:cc:dd:ee:ff
         """
         cmd = 'unauthorize-guest'
-        js = {'mac': guest_mac}
+        js = {'mac': guest_mac.lower()}
 
         return self._run_command(cmd, params=js)
